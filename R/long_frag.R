@@ -1,37 +1,52 @@
-#' Fragmentation
+#' Fragmentation of Mulitple Subjects
+#'
+#' @param counts A data.frame of multiple (or 1) rows with 1441 or 1442 columns.
+#' @param weartime data.frame of same dimension as \code{counts} and must
+#' consist of 1's and 0's.  If unspecified, assumed to be when
+#' \code{counts > 0}.
+#' @param id column name/variable in \code{counts} and \code{weartime}
+#' corresponding to an ID.
+#' @param visit column name/variable in \code{counts} and \code{weartime}
+#'  corresponding to a visit.
+#' If not only one visit per \code{id}, set this to \code{NULL}
+#' @param thresh.lower Lower cut-off for count values in intensity range.
+#' Passed to \code{\link{accel.bouts}}
+#' @param bout.length minimum length of an activity bout.
+#' Passed to \code{\link{accel.bouts}}
+#' @param ... additional arguments passed to  \code{\link{accel.bouts}}
+#'
+#' @return List of mean rest bout, mean activity bout, the total data,
+#' and the reciprocal of the bouts
+#' @export
+#'
+#' @importFrom tidyr spread
+#' @importFrom dplyr do summarize
 #'
 #' @examples
-#'
-#' library(dplyr)
-#' library(tidyr)
 #' counts = example_activity_data$counts
 #' weartime = example_activity_data$weartime
-#' counts = counts %>%
-#' gather(key=minute, value= value, -ID, -visit ) %>%
-#' mutate(minute = gsub("[[:alpha:]]", "", minute),
-#'        minute = trimws(minute),
-#'         minute = as.numeric(minute)) %>%
-#'        arrange(ID, visit, minute)
-#' id_to_run = counts$ID[1]
-#' counts = counts[ counts$ID == id_to_run, ]
-#' counts$ID = counts$visit = NULL
-#' weartime = weartime[ weartime$ID == id_to_run, ]
-#' weartime$ID = weartime$visit = NULL
-#'
-#' res = frag(counts, weartime = weartime, thresh.lower = 100)
-#'
-long_frag = function(counts, weartime, id = "ID", visit = "visit") {
-#
-#   library(dplyr)
-#   library(tidyr)
+#' res = multi_frag(counts, weartime = weartime, thresh.lower = 100)
+multi_frag = function(
+  counts, weartime,
+  id = "ID",
+  visit = "visit",
+  thresh.lower = 100,
+  bout.length = 1) {
+  #
+  #   library(dplyr)
+  #   library(tidyr)
 
-  counts = example_activity_data$counts
-  weartime = example_activity_data$weartime
+
   long_counts = wide_to_long(counts, id = id, visit = visit)
   long_weartime = wide_to_long(weartime, id = id, visit = visit)
-  long_weartime$value = long_weartime$value> 0
-  thresh.lower = 100
-  bout.length = 1
+  uwear = unique(c(long_weartime$value))
+  uwear = as.integer(uwear)
+  if (!all(uwear %in% c(0, 1))) {
+    stop("weartime data has non 0-1 data! Set NA to 0 if missing")
+  }
+
+  long_weartime$value = long_weartime$value > 0
+
 
   na_count = !is.finite(long_counts$value)
   bad = na_count & (long_weartime$value %in% TRUE)
@@ -79,14 +94,37 @@ long_frag = function(counts, weartime, id = "ID", visit = "visit") {
     group_by(ID, values) %>%
     summarize( mean_bout = mean(lengths) )
   summ = summ %>%
-    mutate(values = recode(values, `0` = "rest", `1` = "active"))
+    mutate(values = recode(values, `0` = "mean_rest", `1` = "mean_active"))
   summ = summ %>%
     spread(key = values, value = mean_bout)
+  summ = summ %>% mutate(
+    lambda_rest = 1/mean_rest,
+    lambda_active = 1/mean_active)
+  L = list(summarized = summ,
+           bout_data = rle_mat)
+  return(L)
 }
 
 
 
+#' Convert Wide 1440+ data to Long
+#'
+#' @param x A \code{data.frame} of and ID variable, 1440 measurements, and
+#' an optional visit variable
+#' @param id column name/variable in \code{x} corresponding to an ID
+#' @param visit column name/variable in \code{x} corresponding to a visit.
+#' If not only one visit per \code{id}, set this to \code{NULL}
+#'
+#' @return A \code{data.frame} of long values
+#' @export
+#'
+#' @importFrom tidyr gather_
+#' @importFrom dplyr mutate arrange
+#' @examples
+#'long_counts = wide_to_long(example_activity_data$counts, id = "ID",
+#'visit = "visit")
 wide_to_long = function(x, id = "ID", visit = NULL) {
+  x = as.data.frame(x)
   cn = colnames(x)
   gather_cols = cn[ !(cn %in% c(id, visit)) ]
 
@@ -103,7 +141,6 @@ wide_to_long = function(x, id = "ID", visit = NULL) {
     x = x %>%
       arrange(ID, minute)
   } else {
-
     x = x %>%
       arrange(ID, visit, minute)
   }

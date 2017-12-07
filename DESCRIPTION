@@ -1,5 +1,5 @@
 Package: fragmentation
-Version: 0.1.0
+Version: 0.2.0
 Title: Fragmentation Methods for Accelerometry Data
 Description: Calculates fragmentation on accelerometry data.
 Authors@R: c(
@@ -13,7 +13,8 @@ License: GPL-3
 Imports:
     accelerometry,
     dplyr,
-    stats
+    stats,
+    tidyr
 Suggests: 
     knitr,
     rmarkdown,
