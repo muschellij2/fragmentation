@@ -5,3 +5,4 @@
 ^appveyor\.yml$
 ^\.travis\.yml$
 ^frag\.R$
+R/long_frag\.R$
