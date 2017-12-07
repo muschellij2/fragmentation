@@ -20,7 +20,7 @@
 #' @export
 #'
 #' @importFrom tidyr spread
-#' @importFrom dplyr do summarize
+#' @importFrom dplyr do summarize recode
 #'
 #' @examples
 #' counts = example_activity_data$counts
@@ -32,9 +32,14 @@ multi_frag = function(
   visit = "visit",
   thresh.lower = 100,
   bout.length = 1) {
-  #
-  #   library(dplyr)
-  #   library(tidyr)
+
+  # stupid NSE problem with dplyr
+  ID = visit = values = value = mean_bout = NULL
+  rm(list = c("ID", "visit", "values", "mean_bout", "value"))
+
+
+  mean_active = mean_rest = NULL
+  rm(list = c("mean_active", "mean_rest"))
 
 
   long_counts = wide_to_long(counts, id = id, visit = visit)
@@ -124,6 +129,11 @@ multi_frag = function(
 #'long_counts = wide_to_long(example_activity_data$counts, id = "ID",
 #'visit = "visit")
 wide_to_long = function(x, id = "ID", visit = NULL) {
+
+  # stupid NSE problem with dplyr
+  minute = ID = visit = NULL
+  rm(list = c("minute", "ID", "visit"))
+
   x = as.data.frame(x)
   cn = colnames(x)
   gather_cols = cn[ !(cn %in% c(id, visit)) ]
