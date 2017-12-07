@@ -31,6 +31,15 @@ Fragmentation
 \examples{
 counts = matrix(rpois(1440*5, lambda = 5), ncol = 1440)
 res = frag(counts, thresh.lower = 2)
-res = frag(counts, thresh.lower = 2)
+
+counts = example_activity_data$counts
+weartime = example_activity_data$weartime
+id_to_run = counts$ID[1]
+counts = counts[ counts$ID == id_to_run, ]
+counts$ID = counts$visit = NULL
+weartime = weartime[ weartime$ID == id_to_run, ]
+weartime$ID = weartime$visit = NULL
+
+res = frag(counts, weartime = weartime, thresh.lower = 100)
 
 }

@@ -20,10 +20,20 @@
 #' @examples
 #' counts = matrix(rpois(1440*5, lambda = 5), ncol = 1440)
 #' res = frag(counts, thresh.lower = 2)
-#' res = frag(counts, thresh.lower = 2)
+#'
+#' counts = example_activity_data$counts
+#' weartime = example_activity_data$weartime
+#' id_to_run = counts$ID[1]
+#' counts = counts[ counts$ID == id_to_run, ]
+#' counts$ID = counts$visit = NULL
+#' weartime = weartime[ weartime$ID == id_to_run, ]
+#' weartime$ID = weartime$visit = NULL
+#'
+#' res = frag(counts, weartime = weartime, thresh.lower = 100)
 #'
 frag = function(counts, weartime = NULL, thresh.lower = 100, bout.length = 1, ...) {
 
+  counts = as.matrix(counts)
   # stupid NSE problem with dplyr
   mean_bout = values = lengths = NULL
   rm(list = c("mean_bout", "values", "lengths"))
@@ -36,6 +46,7 @@ frag = function(counts, weartime = NULL, thresh.lower = 100, bout.length = 1, ..
   if (is.null(weartime)) {
     weartime = counts > 0
   }
+  weartime = as.matrix(weartime)
   uwear = unique(c(weartime))
   uwear = as.integer(uwear)
   if (!all(uwear %in% c(0, 1))) {
