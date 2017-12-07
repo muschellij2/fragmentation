@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 # fragmentation Package: 
-The goal of `fragmentation` is to provide calculates fragmentation on accelerometry data.
+The goal of `fragmentation` is to provide calculations of fragmentation on accelerometry data.
 
 ## Installation
 
