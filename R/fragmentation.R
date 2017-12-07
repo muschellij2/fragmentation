@@ -16,12 +16,17 @@
 #'
 #' @importFrom accelerometry accel.bouts rle2
 #' @importFrom dplyr data_frame filter %>% group_by summarize select as_data_frame
+#' @importFrom stats na.omit
 #' @examples
 #' counts = matrix(rpois(1440*5, lambda = 5), ncol = 1440)
 #' res = frag(counts, thresh.lower = 2)
 #' res = frag(counts, thresh.lower = 2)
 #'
 frag = function(counts, weartime = NULL, thresh.lower = 100, bout.length = 1, ...) {
+
+  # stupid NSE problem with dplyr
+  mean_bout = values = lengths = NULL
+  rm(list = c("mean_bout", "values", "lengths"))
 
   check_1440 = function(mat){
     n_time = ncol(mat)
@@ -75,6 +80,7 @@ frag = function(counts, weartime = NULL, thresh.lower = 100, bout.length = 1, ..
   mat = as_data_frame(mat)
   mat = mat %>%
     filter(!is.na(values))
+
 
   summ = mat %>%
     group_by(values) %>%
