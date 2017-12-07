@@ -34,12 +34,12 @@ multi_frag = function(
   bout.length = 1) {
 
   # stupid NSE problem with dplyr
-  ID = visit = values = value = mean_bout = NULL
-  rm(list = c("ID", "visit", "values", "mean_bout", "value"))
+  ID = values = value = mean_bout = NULL
+  rm(list = c("ID", "values", "mean_bout", "value"))
 
 
-  mean_active = mean_rest = NULL
-  rm(list = c("mean_active", "mean_rest"))
+  . = y = mean_active = mean_rest = NULL
+  rm(list = c("mean_active", "mean_rest", "y", "."))
 
 
   long_counts = wide_to_long(counts, id = id, visit = visit)
