@@ -15,7 +15,8 @@
 #' @export
 #'
 #' @importFrom accelerometry accel.bouts rle2
-#' @importFrom dplyr data_frame filter %>% group_by summarize select as_data_frame
+#' @importFrom dplyr data_frame filter %>% group_by
+#' @importFrom dplyr summarize select as_data_frame
 #' @importFrom stats na.omit
 #' @examples
 #' counts = matrix(rpois(1440*5, lambda = 5), ncol = 1440)
@@ -31,7 +32,12 @@
 #'
 #' res = frag(counts, weartime = weartime, thresh.lower = 100)
 #'
-frag = function(counts, weartime = NULL, thresh.lower = 100, bout.length = 1, ...) {
+frag = function(
+  counts,
+  weartime = NULL,
+  thresh.lower = 100,
+  bout.length = 1,
+  ...) {
 
   counts = as.matrix(counts)
   # stupid NSE problem with dplyr
