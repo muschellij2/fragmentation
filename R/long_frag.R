@@ -131,8 +131,8 @@ multi_frag = function(
 wide_to_long = function(x, id = "ID", visit = NULL) {
 
   # stupid NSE problem with dplyr
-  minute = ID = visit = NULL
-  rm(list = c("minute", "ID", "visit"))
+  minute = ID = NULL
+  rm(list = c("minute", "ID"))
 
   x = as.data.frame(x)
   cn = colnames(x)
