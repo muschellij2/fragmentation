@@ -21,6 +21,7 @@
 #'
 #' @importFrom tidyr spread
 #' @importFrom dplyr do summarize recode
+#' @importFrom rlang "!!"
 #'
 #' @examples
 #' counts = example_activity_data$counts
@@ -44,6 +45,12 @@ multi_frag = function(
 
   long_counts = wide_to_long(counts, id = id, visit = visit)
   long_weartime = wide_to_long(weartime, id = id, visit = visit)
+  # long_counts$ID = long_counts[, id]
+  # long_weartime$ID = long_weartime[, id]
+  #
+  # long_weartime[, id] = NULL
+  # long_counts[, id] = NULL
+
   uwear = unique(c(long_weartime$value))
   uwear = as.integer(uwear)
   if (!all(uwear %in% c(0, 1))) {
@@ -83,20 +90,22 @@ multi_frag = function(
     }
     return(TRUE)
   }
+  name_id = as.name(id)
+
   checker = long_counts %>%
-    group_by(ID) %>%
+    group_by(!!name_id) %>%
     summarize(check = check_y(y))
 
   rle_mat = long_counts %>%
     select(-value) %>%
-    group_by(ID) %>%
+    group_by(!!name_id) %>%
     do(as_data_frame(rle2(.$y)))
 
   rle_mat = rle_mat %>%
     filter(!is.na(values))
 
   summ = rle_mat %>%
-    group_by(ID, values) %>%
+    group_by(!!name_id, values) %>%
     summarize( mean_bout = mean(lengths) )
   summ = summ %>%
     mutate(values = recode(values, `0` = "mean_rest", `1` = "mean_active"))
@@ -131,8 +140,8 @@ multi_frag = function(
 wide_to_long = function(x, id = "ID", visit = NULL) {
 
   # stupid NSE problem with dplyr
-  minute = ID = NULL
-  rm(list = c("minute", "ID"))
+  minute = NULL
+  rm(list = c("minute"))
 
   x = as.data.frame(x)
   cn = colnames(x)
@@ -147,12 +156,15 @@ wide_to_long = function(x, id = "ID", visit = NULL) {
   if (any(is.na(x$minute))) {
     stop("Minute data cannot be changed to numeic")
   }
+  name_id = as.name(id)
+
   if (is.null(visit)) {
     x = x %>%
-      arrange(ID, minute)
+      arrange(!!name_id, minute)
   } else {
+    name_vis = as.name(visit)
     x = x %>%
-      arrange(ID, visit, minute)
+      arrange(!!name_id, !!name_vis, minute)
   }
   return(x)
 }
